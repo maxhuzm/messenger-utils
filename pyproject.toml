@@ -1,15 +1,23 @@
 [project]
 name = "messenger-utils"
 version = "0.1.0"
-description = "Add your description here"
+description = "Utilites and CLI for MAX and Telegram messengers."
 readme = "README.md"
 authors = [
-    { name = "Max-on-CoreiI7", email = "max@huzm.ru" }
+    { name = "Maxim Huzmiev", email = "max@huzm.ru" }
 ]
 requires-python = ">=3.12"
+
 dependencies = [
     "httpx>=0.28.1",
     "typer>=0.20.0",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=9.0.2",
+    "pytest-cov>=7.0.0",
+    "pytest-mock>=3.15.1",
 ]
 
 [build-system]
