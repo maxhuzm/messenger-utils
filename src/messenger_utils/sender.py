@@ -15,15 +15,14 @@ class Sender(ABC):
     Particular functionality is implemented in derived classes.
     """
 
-    def __init__(self, api_url: str, secret_key: str):
+    def __init__(self, bot_token: str):
         """
         Constructor.
         
         :param api_url: URL of the messenger's API endpoint.
         :param secret_key: Secret key for API authentication.
         """
-        self.api_url = api_url
-        self.secret_key = secret_key
+        self.bot_token = bot_token
 
 
 

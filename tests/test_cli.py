@@ -21,9 +21,3 @@ def test_cli_version(runner):
     result = runner.invoke(app, ["version"])
     assert result.exit_code == 0
     assert re.match(r"^\d+\.\d+\.\d+$", result.output)
-
-
-def test_cli_test(runner):
-    result = runner.invoke(app, ["test"])
-    assert result.exit_code == 0
-    assert "test" in result.output

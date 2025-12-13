@@ -11,13 +11,17 @@ Via UV:
 ``` uv run -m uessenger_utils -h```
 """
 
-from typer import Typer
+from typing import Literal
+import asyncio
+import typer
 from rich.console import Console
-from messenger_utils.sender import Sender
-from messenger_utils import __version__
+from rich.table import Table
+from messenger_utils import __version__, MaxSender
+
+
 
 # Global objects
-app = Typer(
+app = typer.Typer(
     name="Messenger Utils",
     help="Utilites and CLI tool for Telegram & MAX messengers.",
     add_completion=False,
@@ -29,19 +33,99 @@ ENV_PREFIX = "MESSENGER_UTILS_"
 
 ###  CLI commands  ###
 
-@app.command()
-def test():
-    console.print("test", style="green")
-
 
 @app.command()
 def version():
+    """Print package version."""
     console.print(__version__, style="cyan")
 
-    
+
+
+@app.command(name="bot-info")
+def botinfo(
+    bot_token: str = typer.Option(..., "--bot-token", "-t",  envvar=f"{ENV_PREFIX}MAX_BOT_TOKEN", show_envvar=True, help="MAX bot token"),
+    messenger: Literal["max", "telegram"] = typer.Option("max", "--messenger", "-m", help="Messenger type")
+):
+    """Get information about the MAX or Telegram Bot."""
+    if messenger == "max":
+        sender = MaxSender(bot_token=bot_token)
+        bot_info =  asyncio.run(sender.get_bot_info())
+        console.print(bot_info, style="cyan")
+    else:
+        # TODO: bot information for Telegram bot
+        pass
+
+
+
+@app.command(name="bot-commands")
+def botcommands(
+    bot_token: str = typer.Option(..., "--bot-token", "-t",  envvar=f"{ENV_PREFIX}MAX_BOT_TOKEN", show_envvar=True, help="MAX bot token"),
+    messenger: Literal["max", "telegram"] = typer.Option("max", "--messenger", "-m", help="Messenger type")
+):
+    """Get list of bot commands."""
+    if messenger == "max":
+        sender = MaxSender(bot_token=bot_token)
+        bot_commands =  asyncio.run(sender.get_bot_commands())
+        # if bot_commands list is empty
+        if not bot_commands:
+            console.print("No commands found for bot", style="yellow")
+            return
+        table = Table(title="Bot Commands")
+        table.add_column("Name", style="cyan", no_wrap=True)
+        table.add_column("Description", style="cyan")
+        for command in bot_commands:
+            table.add_row(command.get("name", ""), command.get("description", ""))
+        console.print(table)
+    else:
+        # TODO: bot commands for Telegram bot
+        pass
+
+
+
+@app.command(name="set-command")
+def set_command(
+    bot_token: str = typer.Option(..., "--bot-token", "-t",  envvar=f"{ENV_PREFIX}MAX_BOT_TOKEN", show_envvar=True, help="MAX bot token"),
+    messenger: Literal["max", "telegram"] = typer.Option("max", "--messenger", "-m", help="Messenger type"),
+    name: str = typer.Option(..., "--name", "-n", help="Command name"),
+    description: str = typer.Option(..., "--description", "-d", help="Command description")
+):
+    """Register new command for the Bot."""
+    if messenger == "max":
+        sender = MaxSender(bot_token=bot_token)
+        try:
+            response = asyncio.run(sender.register_command(name=name, description=description))
+        except ValueError:
+            console.print(f"[!] Command `{name}` already exists!", style="red")
+            return
+        console.print(response, style="cyan")
+    else:
+        # TODO: set command for Telegram bot
+        pass
+
+
+
+@app.command(name="remove-command")
+def remove_command(
+    bot_token: str = typer.Option(..., "--bot-token", "-t",  envvar=f"{ENV_PREFIX}MAX_BOT_TOKEN", show_envvar=True, help="MAX bot token"),
+    messenger: Literal["max", "telegram"] = typer.Option("max", "--messenger", "-m", help="Messenger type"),
+    name: str = typer.Option(..., "--name", "-n", help="Command name")
+):
+    """Remove command from the Bot."""
+    if messenger == "max":
+        sender = MaxSender(bot_token=bot_token)
+        try:
+            response = asyncio.run(sender.remove_command(name=name))
+        except ValueError:
+            console.print(f"[!] Command `{name}` not found!", style="red")
+            return
+        console.print(response, style="cyan")
+    else:
+        # TODO: remove command for Telegram bot
+        pass
 
 
 def main():
+    """Entry point for CLI app."""
     app()
 
 if __name__ == "__main__":
