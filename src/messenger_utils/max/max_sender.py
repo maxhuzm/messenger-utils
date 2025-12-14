@@ -59,7 +59,7 @@ class MaxSender(Sender):
             )
             response.raise_for_status()
         return response.json()
-    
+
 
 
     async def patch(
@@ -68,7 +68,7 @@ class MaxSender(Sender):
         data: dict|None = None
     ):
         """
-        Docstring for patch
+        Send PATCH request to the bot API.
 
         :param: endpoint: url part after `api_url`
         :param: data: request body in dict format
@@ -82,6 +82,35 @@ class MaxSender(Sender):
             response = await client.patch(
                 url,
                 headers=headers,
+                json=data
+            )
+            response.raise_for_status()
+        return response.json()
+
+
+
+    async def post(
+        self,
+        endpoint: str="", *,
+        data: dict|None = None,
+        url_params: dict[str, str]|None = None
+    ):
+        """
+        Send POST request to the bot API.
+
+        :param: endpoint: url part after `api_url`
+        :param: data: request body in dict format
+        """
+        url = f"{self.MAX_API_URL}/{endpoint}"
+        headers = {
+            "Authorization": self.bot_token
+        }
+        response: httpx.Response
+        async with httpx.AsyncClient() as client:
+            response = await client.post(
+                url,
+                headers=headers,
+                params=url_params,
                 json=data
             )
             response.raise_for_status()
@@ -143,6 +172,8 @@ class MaxSender(Sender):
         Remove command from the MAX Bot.
         
         :param name: command name (without /)
+        :raises ValueError: If command not found
+        :raises httpx.NetworkError: If there's a network-related error during the request.
         """
         endpoint = "me"
         commands = await self.get_bot_commands()
@@ -159,13 +190,20 @@ class MaxSender(Sender):
 
 
 
-    def send_text_message(self, message: str):
+    async def send_text_message(self, message: str, target: str):
         """
         Send text message to the MAX user / chat via API.
         
         :param message: text message to send
+        :param target: chat_id
+        :raises httpx.NetworkError: If there is a network-related error during the request.
         """
-        pass
+        endpoint = "messages"
+        data = {
+            "text": message
+        }
+        response = await self.post(endpoint, data=data, url_params={"chat_id": target})
+        return response
 
 
 

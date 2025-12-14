@@ -14,6 +14,7 @@ Via UV:
 from typing import Literal
 import asyncio
 import typer
+from httpx import NetworkError
 from rich.console import Console
 from rich.table import Table
 from messenger_utils import __version__, MaxSender
@@ -42,7 +43,7 @@ def version():
 
 
 @app.command(name="bot-info")
-def botinfo(
+def bot_info(
     bot_token: str = typer.Option(..., "--bot-token", "-t",  envvar=f"{ENV_PREFIX}MAX_BOT_TOKEN", show_envvar=True, help="MAX bot token"),
     messenger: Literal["max", "telegram"] = typer.Option("max", "--messenger", "-m", help="Messenger type")
 ):
@@ -58,7 +59,7 @@ def botinfo(
 
 
 @app.command(name="bot-commands")
-def botcommands(
+def bot_commands(
     bot_token: str = typer.Option(..., "--bot-token", "-t",  envvar=f"{ENV_PREFIX}MAX_BOT_TOKEN", show_envvar=True, help="MAX bot token"),
     messenger: Literal["max", "telegram"] = typer.Option("max", "--messenger", "-m", help="Messenger type")
 ):
@@ -86,8 +87,8 @@ def botcommands(
 def set_command(
     bot_token: str = typer.Option(..., "--bot-token", "-t",  envvar=f"{ENV_PREFIX}MAX_BOT_TOKEN", show_envvar=True, help="MAX bot token"),
     messenger: Literal["max", "telegram"] = typer.Option("max", "--messenger", "-m", help="Messenger type"),
-    name: str = typer.Option(..., "--name", "-n", help="Command name"),
-    description: str = typer.Option(..., "--description", "-d", help="Command description")
+    name: str = typer.Option(..., "--name", "-n", help="Command name", prompt=True),
+    description: str = typer.Option(..., "--description", "-d", help="Command description", prompt=True)
 ):
     """Register new command for the Bot."""
     if messenger == "max":
@@ -108,20 +109,53 @@ def set_command(
 def remove_command(
     bot_token: str = typer.Option(..., "--bot-token", "-t",  envvar=f"{ENV_PREFIX}MAX_BOT_TOKEN", show_envvar=True, help="MAX bot token"),
     messenger: Literal["max", "telegram"] = typer.Option("max", "--messenger", "-m", help="Messenger type"),
-    name: str = typer.Option(..., "--name", "-n", help="Command name")
+    names: list[str] = typer.Option([], "--name", "-n", help="Command name")
 ):
     """Remove command from the Bot."""
+    if not names:
+        console.print("[!] No commands provided!", style="red")
+        raise typer.Abort()
+    # MAX Messenger part
     if messenger == "max":
         sender = MaxSender(bot_token=bot_token)
-        try:
-            response = asyncio.run(sender.remove_command(name=name))
-        except ValueError:
-            console.print(f"[!] Command `{name}` not found!", style="red")
-            return
+        response: dict = {}
+        for name in names:
+            try:
+                response = asyncio.run(sender.remove_command(name=name))
+            except ValueError:
+                console.print(f"[!] Command `{name}` not found!", style="red")
+                return
         console.print(response, style="cyan")
+    # Telegram part
     else:
         # TODO: remove command for Telegram bot
         pass
+
+
+
+@app.command(name="send")
+def send_message(
+    bot_token: str = typer.Option(..., "--bot-token", "-t",  envvar=f"{ENV_PREFIX}MAX_BOT_TOKEN", show_envvar=True, help="MAX bot token"),
+    messenger: Literal["max", "telegram"] = typer.Option("max", "--messenger", "-m", help="Messenger type"),
+    target: str = typer.Option(..., "--chat", "-c", help="Chat ID for MAX"),
+    content: str = typer.Argument(..., help="Message to send")
+    # content: str = typer.Option(..., "--message", "-c", help="Message to send", prompt=True),
+):
+    """Send message to the Bot."""
+    # MAX part
+    if messenger == "max":
+        sender = MaxSender(bot_token=bot_token)
+        try:
+            response = asyncio.run(sender.send_text_message (message=content, target=target))
+        except NetworkError:
+            console.print("[!] Network error!", style="red")
+            return
+        console.print(response, style="cyan")
+    # Telegram part
+    else:
+        # TODO: send command for Telegram bot
+        pass
+
 
 
 def main():

@@ -27,12 +27,12 @@ class Sender(ABC):
 
 
     @abstractmethod
-    def send_text_message(self, message: str):
+    async def send_text_message(self, message: str, target: str):
         """
         Sends a message to the messenger's webhook URL.
         
         :param message: text message to send
-        :kwargs: other arguments to declare in derived classes
+        :param target: user_id, chat_id, etc. (see docs in derived classes)
         """
         pass
 
