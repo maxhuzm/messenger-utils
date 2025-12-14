@@ -146,7 +146,7 @@ def send_message(
     if messenger == "max":
         sender = MaxSender(bot_token=bot_token)
         try:
-            response = asyncio.run(sender.send_text_message (message=content, target=target))
+            response = asyncio.run(sender.send_text_message (text=content, target=target))
         except NetworkError:
             console.print("[!] Network error!", style="red")
             return
@@ -155,6 +155,8 @@ def send_message(
     else:
         # TODO: send command for Telegram bot
         pass
+
+
 
 
 

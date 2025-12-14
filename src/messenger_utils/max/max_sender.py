@@ -4,8 +4,10 @@ Sender functionality for MAX messenger.
 Contains class MaxSender, derived from Sender abstract class.
 """
 
+import json
 import httpx
 from messenger_utils.sender import Sender
+from messenger_utils.max.max_keyboard import *
 
 
 ###   Class MaxSender   ###
@@ -26,7 +28,6 @@ class MaxSender(Sender):
         """
         Constructor.
         
-        :param api_url: URL of the messenger's API endpoint.
         :param secret_key: Secret key for API authentication.
         """
         if bot_token is None:
@@ -190,7 +191,7 @@ class MaxSender(Sender):
 
 
 
-    async def send_text_message(self, message: str, target: str):
+    async def send_text_message(self, text: str, target: str):
         """
         Send text message to the MAX user / chat via API.
         
@@ -200,21 +201,36 @@ class MaxSender(Sender):
         """
         endpoint = "messages"
         data = {
-            "text": message
+            "text": text
         }
         response = await self.post(endpoint, data=data, url_params={"chat_id": target})
         return response
 
 
 
-    def send_keyboard_message(self, message: str, keyboard: list[list[str]]):
+    async def send_keyboard_message(self, text: str, target: str, keyboard: MaxKeyboard):
         """
         Send message with inline keyboard to the MAX user / chat via API.
         
         :param message: text message to send
+        :param target: chat_id
         :keyboard: 2d-array of buttons       
         """
-        pass
+        endpoint = "messages"
+        data = {
+            "text": text,
+            "attachments": [
+                {
+                    "type": "inline_keyboard",
+                    "payload": json.loads(keyboard.to_json())
+                }
+            ]
+        }
+        print("----------------")
+        print(data, flush=True)
+        print("----------------")
+        response = await self.post(endpoint, data=data, url_params={"chat_id": target})
+        return response
 
 
 

@@ -19,7 +19,6 @@ class Sender(ABC):
         """
         Constructor.
         
-        :param api_url: URL of the messenger's API endpoint.
         :param secret_key: Secret key for API authentication.
         """
         self.bot_token = bot_token
@@ -27,7 +26,7 @@ class Sender(ABC):
 
 
     @abstractmethod
-    async def send_text_message(self, message: str, target: str):
+    async def send_text_message(self, text: str, target: str):
         """
         Sends a message to the messenger's webhook URL.
         
