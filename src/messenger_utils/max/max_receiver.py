@@ -16,7 +16,7 @@ class MaxReceiver(Receiver):
         """
         Init MaxReceiver object.
         """
-        pass
+        super().__init__()
 
 
 

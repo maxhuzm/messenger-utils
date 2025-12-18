@@ -34,10 +34,10 @@ class Receiver(ABC):
         """
         def decorator(func: Callable) -> Callable:
             """The decorator itself."""
+            self.commands_table[cmd_name] = func
             @wraps(func)
             def wrapper(*args, **kwargs) -> Callable:
                 """Wrapper function."""
-                self.commands_table[cmd_name] = func
                 return func(*args, **kwargs)
             return wrapper
         return decorator
