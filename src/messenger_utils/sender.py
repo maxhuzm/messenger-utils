@@ -1,13 +1,12 @@
 """
 Message send functionality for messenger_utils
-
 """
 
 import httpx
 from abc import ABC, abstractmethod
 
 
-### CLASS `SENDER` ###
+### CLASS `Sender` ###
 
 class Sender(ABC):
     """
@@ -17,7 +16,7 @@ class Sender(ABC):
 
     def __init__(self, bot_token: str):
         """
-        Constructor.
+        Init Sender object.
         
         :param secret_key: Secret key for API authentication.
         """
@@ -35,17 +34,6 @@ class Sender(ABC):
         """
         pass
 
-
-
-    @abstractmethod
-    def declare_bot_command(self, *, command: str, description: str):
-        """
-        Declare command (starting with /) for the Bot
-        
-        :param command: command to declare
-        :param description: description of the command
-        """
-        pass
 
 
 ### END OF CLASS `SENDER`` ###

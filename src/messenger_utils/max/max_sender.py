@@ -8,6 +8,7 @@ import json
 import httpx
 from messenger_utils.sender import Sender
 from messenger_utils.max.max_keyboard import *
+from . import MAX_API_URL
 
 
 ###   Class MaxSender   ###
@@ -18,8 +19,6 @@ class MaxSender(Sender):
     
     Derived from Sender abstract class.
     """
-
-    MAX_API_URL = "https://platform-api.max.ru"
 
     def __init__(
         self,
@@ -35,6 +34,8 @@ class MaxSender(Sender):
         super().__init__(bot_token)
 
 
+    ###  Network fucntionality  ###
+
 
     async def get(
         self,
@@ -47,7 +48,7 @@ class MaxSender(Sender):
         :param endpoint: url part after `api_url`
         :param url-params: ?xxx&yyy params of get-request (if needed)
         """
-        url = f"{self.MAX_API_URL}/{endpoint}"
+        url = f"{MAX_API_URL}/{endpoint}"
         headers = {
             "Authorization": self.bot_token
         }
@@ -74,7 +75,7 @@ class MaxSender(Sender):
         :param: endpoint: url part after `api_url`
         :param: data: request body in dict format
         """
-        url = f"{self.MAX_API_URL}/{endpoint}"
+        url = f"{MAX_API_URL}/{endpoint}"
         headers = {
             "Authorization": self.bot_token
         }
@@ -102,7 +103,7 @@ class MaxSender(Sender):
         :param: endpoint: url part after `api_url`
         :param: data: request body in dict format
         """
-        url = f"{self.MAX_API_URL}/{endpoint}"
+        url = f"{MAX_API_URL}/{endpoint}"
         headers = {
             "Authorization": self.bot_token
         }
@@ -116,7 +117,38 @@ class MaxSender(Sender):
             )
             response.raise_for_status()
         return response.json()
+    
 
+    async def delete(
+        self,
+        endpoint: str="", *,
+        url_params: dict[str, str]|None = None
+    ):
+        """
+        Send DELETE request to the bot API.
+
+        :param: endpoint: url part after `api_url`
+        """
+        url = f"{MAX_API_URL}/{endpoint}"
+        headers = {
+            "Authorization": self.bot_token
+        }
+        response: httpx.Response
+        async with httpx.AsyncClient() as client:
+            response = await client.delete(
+                url,
+                headers=headers,
+                params=url_params
+            )
+            response.raise_for_status()
+        return response.json()
+        
+
+
+    ### Public Interfaces ###
+
+
+    # Bot info & settings
 
 
     async def get_bot_info(self) -> dict:
@@ -126,7 +158,41 @@ class MaxSender(Sender):
         endpoint = "me"
         response = await self.get(endpoint)
         return response
-    
+
+
+
+    async def get_webhooks(self) -> dict:
+        """
+        Get webhooks for the MAX Bot.
+        """
+        endpoint = "subscriptions"
+        response = await self.get(endpoint)
+        return response
+
+
+
+    async def start_webhooks(self, url: str) -> dict:
+        """
+        Start webhooks for the MAX Bot.
+
+        :param url: address of the webhooks processing server    
+        """
+        endpoint = "subscriptions"
+        body = { "url": url }
+        response = await self.post(endpoint, data=body)
+        return response
+
+
+
+    async def remove_webhook(self, url: str) -> dict:
+        """
+        Remove existing webhook for the MAX Bot.
+        """
+        endpoint = "subscriptions"
+        params = { "url": url }
+        response = await self.delete(endpoint, url_params=params)
+        return response
+
 
 
     async def get_bot_commands(self) -> list[dict]:
@@ -143,7 +209,7 @@ class MaxSender(Sender):
 
     async def register_command(self, *, name: str, description: str):
         """
-        Register new command for the MAX Bot.
+        Register new command for the MAX Bot (/xxx).
         
         :param name: command name (without /)
         :param description: Command description
@@ -190,6 +256,8 @@ class MaxSender(Sender):
         return response
 
 
+    # Messages
+
 
     async def send_text_message(self, text: str, target: str):
         """
@@ -230,15 +298,6 @@ class MaxSender(Sender):
         return response
 
 
-
-    def declare_bot_command(self, *, command: str, description: str):
-        """
-        Declare command (starting with /) for the MAX Bot
-        
-        :param command: command to declare
-        :param description: description of the command
-        """
-        pass
 
 
 ###   End of class MaxSender   ###

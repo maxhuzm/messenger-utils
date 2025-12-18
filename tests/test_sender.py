@@ -44,6 +44,13 @@ def test_button_serialize():
     assert open_app_btn_dict == '{"type": "open_app", "text": "test", "web_app": "web_app", "contact_id": 123, "payload": "payload"}'
 
 
+def test_start_webhooks():
+    """Test for starting bot's webhooks request to MAX API."""
+    sender = MaxSender(bot_token="f9LHodD0cOI4iI-W-cfhiROcxb-JIQ_OqFUrNUyS6bYiLGuD5gvB-_ZKjFc9NvPQMFON06CQMA2Cj1ggZ0dl")
+    response = asyncio.run(sender.start_webhooks(url="https://bot.gardenerio.ru/gardenbot"))
+    assert response == {"success": True }
+
+
 @pytest.mark.skip(reason="Enable if want to test sending message")
 def test_send_keyboard():
     """Test sending the message with inline button"""

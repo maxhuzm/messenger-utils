@@ -58,6 +58,36 @@ def bot_info(
 
 
 
+@app.command(name="webhooks")
+def webhooks(
+    bot_token: str = typer.Option(..., "--bot-token", "-t",  envvar=f"{ENV_PREFIX}MAX_BOT_TOKEN", show_envvar=True, help="MAX bot token"),
+    set_url: str|None = typer.Option(None, "--set", help="Webhook URL to set"),
+    remove_url: str|None = typer.Option(None, "--remove", help="Webhook URL to remove"),
+):
+    """
+    Get or set webhooks processing servers.
+    
+    :param set_url: Webhook URL to set.
+    :param remove_url: Existing webhook URL to unset.
+    (if set_url and remove_url are not presented - info of current webhooks will be printed)
+    """
+    sender = MaxSender(bot_token=bot_token)
+    if set_url is None and remove_url is None:
+        hooks =  asyncio.run(sender.get_webhooks())
+        for hook in hooks.get("subscriptions", []):
+            console.print(f"[>] {hook['url']}", style="cyan")
+    else:
+        if set_url is not None:
+            response =  asyncio.run(sender.start_webhooks(url=set_url))
+            console.print("Set webhook:")
+            console.print(response, style="cyan")
+        if remove_url is not None:
+            response =  asyncio.run(sender.remove_webhook(url=remove_url))
+            console.print("Remove webhook:")
+            console.print(response, style="cyan")
+
+
+
 @app.command(name="bot-commands")
 def bot_commands(
     bot_token: str = typer.Option(..., "--bot-token", "-t",  envvar=f"{ENV_PREFIX}MAX_BOT_TOKEN", show_envvar=True, help="MAX bot token"),
