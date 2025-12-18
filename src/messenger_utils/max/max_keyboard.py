@@ -64,7 +64,7 @@ class BaseButton:
     def to_json(self) -> str:
         """Convert the button to a JSON string."""
         btn_dict = self.to_dict()
-        return json.dumps(btn_dict, default=json_enum_encoder)
+        return json.dumps(btn_dict, default=json_enum_encoder).replace("btn_type", "type")
 
 
 
@@ -149,4 +149,4 @@ class MaxKeyboard:
 
     def to_json(self) -> str:
         """Convert the keyboard to a JSON string."""
-        return json.dumps(self.to_dict(), default=json_enum_encoder)
+        return json.dumps(self.to_dict(), default=json_enum_encoder).replace("btn_type", "type")

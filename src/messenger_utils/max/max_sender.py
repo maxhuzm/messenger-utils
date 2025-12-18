@@ -226,9 +226,6 @@ class MaxSender(Sender):
                 }
             ]
         }
-        print("----------------")
-        print(data, flush=True)
-        print("----------------")
         response = await self.post(endpoint, data=data, url_params={"chat_id": target})
         return response
 

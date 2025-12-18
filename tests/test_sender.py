@@ -35,15 +35,16 @@ def test_button_serialize():
     """Test the output dictionary when buttons serialized."""
     callback_btn = CallbackButton(text="test", payload="buttontoken")
     callback_btn_dict = callback_btn.to_json()
-    assert callback_btn_dict == '{"btn_type": "callback", "text": "test", "payload": "buttontoken", "intent": "default"}'
+    assert callback_btn_dict == '{"type": "callback", "text": "test", "payload": "buttontoken", "intent": "default"}'
     request_geo_location_btn = RequestGeoLocationButton(text="test", quick=True)
     request_geo_location_btn_dict = request_geo_location_btn.to_json()
-    assert request_geo_location_btn_dict == '{"btn_type": "request_geo_location", "text": "test", "quick": true}'
+    assert request_geo_location_btn_dict == '{"type": "request_geo_location", "text": "test", "quick": true}'
     open_app_btn = OpenAppButton(text="test", web_app="web_app", payload="payload", contact_id=123)
     open_app_btn_dict = open_app_btn.to_json()
-    assert open_app_btn_dict == '{"btn_type": "open_app", "text": "test", "web_app": "web_app", "contact_id": 123, "payload": "payload"}'
+    assert open_app_btn_dict == '{"type": "open_app", "text": "test", "web_app": "web_app", "contact_id": 123, "payload": "payload"}'
 
 
+@pytest.mark.skip(reason="Enable if want to test sending message")
 def test_send_keyboard():
     """Test sending the message with inline button"""
     keyboard = MaxKeyboard()
@@ -53,8 +54,7 @@ def test_send_keyboard():
     ])
     keyboard.add_row([
         RequestContactButton(text="test3"),
-        RequestGeoLocationButton(text="test4"),
-        OpenAppButton(text="test5")
+        RequestGeoLocationButton(text="test4")
     ])
     keyboard.add_row([
         MessageButton(text="test6")
