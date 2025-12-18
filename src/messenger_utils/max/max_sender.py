@@ -32,124 +32,13 @@ class MaxSender(Sender):
         if bot_token is None:
             raise ValueError("`bot_token` must be provided in constructor or in environment variable")
         super().__init__(bot_token)
+        self.api_url = MAX_API_URL
 
-
-    ###  Network fucntionality  ###
-
-
-    async def get(
-        self,
-        endpoint: str="", *,
-        url_params: dict[str, str]|None = None
-    ):
-        """
-        Send GET request to the bot API.
-        
-        :param endpoint: url part after `api_url`
-        :param url-params: ?xxx&yyy params of get-request (if needed)
-        """
-        url = f"{MAX_API_URL}/{endpoint}"
-        headers = {
-            "Authorization": self.bot_token
-        }
-        response: httpx.Response
-        async with httpx.AsyncClient() as client:
-            response = await client.get(
-                url,
-                headers=headers,
-                params=url_params
-            )
-            response.raise_for_status()
-        return response.json()
-
-
-
-    async def patch(
-        self,
-        endpoint: str="", *,
-        data: dict|None = None
-    ):
-        """
-        Send PATCH request to the bot API.
-
-        :param: endpoint: url part after `api_url`
-        :param: data: request body in dict format
-        """
-        url = f"{MAX_API_URL}/{endpoint}"
-        headers = {
-            "Authorization": self.bot_token
-        }
-        response: httpx.Response
-        async with httpx.AsyncClient() as client:
-            response = await client.patch(
-                url,
-                headers=headers,
-                json=data
-            )
-            response.raise_for_status()
-        return response.json()
-
-
-
-    async def post(
-        self,
-        endpoint: str="", *,
-        data: dict|None = None,
-        url_params: dict[str, str]|None = None
-    ):
-        """
-        Send POST request to the bot API.
-
-        :param: endpoint: url part after `api_url`
-        :param: data: request body in dict format
-        """
-        url = f"{MAX_API_URL}/{endpoint}"
-        headers = {
-            "Authorization": self.bot_token
-        }
-        response: httpx.Response
-        async with httpx.AsyncClient() as client:
-            response = await client.post(
-                url,
-                headers=headers,
-                params=url_params,
-                json=data
-            )
-            response.raise_for_status()
-        return response.json()
-    
-
-    async def delete(
-        self,
-        endpoint: str="", *,
-        url_params: dict[str, str]|None = None
-    ):
-        """
-        Send DELETE request to the bot API.
-
-        :param: endpoint: url part after `api_url`
-        """
-        url = f"{MAX_API_URL}/{endpoint}"
-        headers = {
-            "Authorization": self.bot_token
-        }
-        response: httpx.Response
-        async with httpx.AsyncClient() as client:
-            response = await client.delete(
-                url,
-                headers=headers,
-                params=url_params
-            )
-            response.raise_for_status()
-        return response.json()
-        
 
 
     ### Public Interfaces ###
 
-
     # Bot info & settings
-
 
     async def get_bot_info(self) -> dict:
         """
