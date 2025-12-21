@@ -21,7 +21,7 @@ class Sender(ABC):
         :param secret_key: Secret key for API authentication.
         """
         self.bot_token: str = bot_token
-        self.api_url: str = "" 
+        self.api_url: str = ""
 
 
 

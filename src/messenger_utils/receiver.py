@@ -14,10 +14,12 @@ class Receiver(ABC):
     Particular functionality is implemented in derived classes.
     """
 
-    def __init__(self):
+    def __init__(self, bot_token: str|None = None):
         """
         Init Receiver object.
         """
+        self.bot_token: str|None = bot_token
+        self.api_url: str = ""
         self.commands_table: dict[str, Callable] = {}    # Command <=> Function link (set by decorator `Command``)
         self.bot_started_func: Callable | None = None
         self.bot_stopped_func: Callable | None = None
