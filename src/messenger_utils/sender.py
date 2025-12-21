@@ -2,8 +2,8 @@
 Message send functionality for messenger_utils
 """
 
-import httpx
 from abc import ABC, abstractmethod
+import httpx
 
 
 ### CLASS `Sender` ###
@@ -26,7 +26,7 @@ class Sender(ABC):
 
 
     @abstractmethod
-    async def send_text_message(self, text: str, target: str):
+    async def send_text_message(self, text: str, target: str) -> dict:
         """
         Sends a message to the messenger's webhook URL.
         
@@ -119,7 +119,8 @@ class Sender(ABC):
             )
             response.raise_for_status()
         return response.json()
-    
+
+
 
     async def delete(
         self,
