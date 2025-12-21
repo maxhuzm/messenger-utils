@@ -20,7 +20,7 @@ class MaxReceiver(Receiver):
 
 
 
-    def parse_webhook(self, event: dict) -> dict:
+    async def parse_webhook(self, event: dict) -> dict:
         """
         Parse event from MAX webhook.
         
@@ -40,7 +40,7 @@ class MaxReceiver(Receiver):
         if event["update_type"] == "bot_started":
             # Bot started
             if self.bot_started_func:
-                self.bot_started_func(event, self.bot_token)
+                await self.bot_started_func(event, self.bot_token)
             return {
                 "result": "ok",
                 "description": "Bot started",
@@ -49,7 +49,7 @@ class MaxReceiver(Receiver):
         if event["update_type"] == "bot_stopped":
             # Bot stopped
             if self.bot_stopped_func:
-                self.bot_stopped_func(event, self.bot_token)
+                await self.bot_stopped_func(event, self.bot_token)
             return {
                 "result": "ok",
                 "description": "Bot stopped",
@@ -58,7 +58,7 @@ class MaxReceiver(Receiver):
         if event["update_type"] == "dialog_cleared":
             # Dialog cleared
             if self.chat_cleared_func:
-                self.chat_cleared_func(event, self.bot_token)
+                await self.chat_cleared_func(event, self.bot_token)
             return {
                 "result": "ok",
                 "description": "Dialog cleared",
@@ -67,7 +67,7 @@ class MaxReceiver(Receiver):
         if event["update_type"] == "dialog_removed":
             # Dialog removed
             if self.chat_removed_func:
-                self.chat_removed_func(event, self.bot_token)
+                await self.chat_removed_func(event, self.bot_token)
             return {
                 "result": "ok",
                 "description": "Dialog removed",
@@ -87,7 +87,7 @@ class MaxReceiver(Receiver):
                         "description": f"Command `{command}` not found!",
                         **result
                     }
-                cmd_result = self.commands_table[command](event, self.bot_token)
+                cmd_result = await self.commands_table[command](event, self.bot_token)
                 return {
                     "result": "ok",
                     "description": f"Command `{command}` executed",

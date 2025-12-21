@@ -96,7 +96,7 @@ class Receiver(ABC):
 
 
     @abstractmethod
-    def parse_webhook(self, event: dict) -> dict:
+    async def parse_webhook(self, event: dict) -> dict:
         """
         Parse message in webhooks requests.
         
