@@ -20,26 +20,62 @@ class MaxReceiver(Receiver):
 
 
 
-    def parse_webhook(self, message: dict) -> dict:
+    def parse_webhook(self, event: dict) -> dict:
         """
-        Parse message from MAX webhook.
+        Parse event from MAX webhook.
         
-        :param message: JSON-formatted message from MAX webhook API
+        :param event: JSON-formatted request body from MAX webhook API
         """
         result = {
-            "full_content": message,
+            "full_content": event,
         }
-        if "update_type" not in message:
+        if "update_type" not in event:
             logger.warning("Message of unknown type received!")
             return {
                 "result": "error",
                 "description": "Webhook message of unknown type received!",
                 **result
             }
-        # Parse message types
-        if message["update_type"] == "message_created":
+        # Parse event types
+        if event["update_type"] == "bot_started":
+            # Bot started
+            if self.bot_started_func:
+                self.bot_started_func()
+            return {
+                "result": "ok",
+                "description": "Bot started",
+                **result
+            }
+        if event["update_type"] == "bot_stopped":
+            # Bot stopped
+            if self.bot_stopped_func:
+                self.bot_stopped_func()
+            return {
+                "result": "ok",
+                "description": "Bot stopped",
+                **result
+            }
+        if event["update_type"] == "dialog_cleared":
+            # Dialog cleared
+            if self.chat_cleared_func:
+                self.chat_cleared_func()
+            return {
+                "result": "ok",
+                "description": "Dialog cleared",
+                **result
+            }
+        if event["update_type"] == "dialog_removed":
+            # Dialog removed
+            if self.chat_removed_func:
+                self.chat_removed_func()
+            return {
+                "result": "ok",
+                "description": "Dialog removed",
+                **result
+            }
+        if event["update_type"] == "message_created":
             # Message created
-            content: str = message["message"]["body"]["text"]
+            content: str = event["message"]["body"]["text"]
             if content.startswith("/"):
                 # Message is a command
                 command = content[1:]
@@ -47,6 +83,7 @@ class MaxReceiver(Receiver):
                     logger.warning(f"Command `{command}` not found!")
                     return {
                         "result": "error",
+                        "type": "command-not-found",
                         "description": f"Command `{command}` not found!",
                         **result
                     }

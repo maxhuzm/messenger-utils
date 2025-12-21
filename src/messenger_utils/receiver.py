@@ -5,8 +5,6 @@ Parcing and processing messenger's responses and web-hooks
 from abc import ABC, abstractmethod
 from collections.abc import Callable
 from functools import wraps
-from typing import ParamSpec, TypeVar
-from . import logger
 
 ### CLASS `Receiver` ###
 
@@ -21,6 +19,10 @@ class Receiver(ABC):
         Init Receiver object.
         """
         self.commands_table: dict[str, Callable] = {}    # Command <=> Function link (set by decorator `Command``)
+        self.bot_started_func: Callable | None = None
+        self.bot_stopped_func: Callable | None = None
+        self.chat_cleared_func: Callable | None = None
+        self.chat_removed_func: Callable | None = None
 
 
     #  DECORATORS
@@ -44,10 +46,55 @@ class Receiver(ABC):
     
 
 
+    def bot_started(self, func: Callable) -> Callable:
+        """
+        Decorator for `bot_started` processing function.
+        
+        :return: Wrapped function
+        """
+        self.bot_started_func = func
+        return func
+    
+
+
+    def bot_stopped(self, func: Callable) -> Callable:
+        """
+        Decorator for `bot_stopped` processing function.
+        
+        :return: Wrapped function
+        """
+        self.bot_stopped_func = func
+        return func
+
+
+
+    def chat_cleared(self, func: Callable) -> Callable:
+        """
+        Decorator for `chat_cleared` processing function.
+        
+        :return: Wrapped function
+        """
+        self.chat_cleared_func = func
+        return func
+
+
+
+    def chat_removed(self, func: Callable) -> Callable:
+        """
+        Decorator for `chat_removed` processing function.
+        
+        :return: Wrapped function
+        """
+        self.chat_removed_func = func
+        return func
+
+
+
     #  PUBLIC METHODS
 
+
     @abstractmethod
-    def parse_webhook(self, message: dict) -> dict:
+    def parse_webhook(self, event: dict) -> dict:
         """
         Parse message in webhooks requests.
         
