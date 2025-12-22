@@ -96,9 +96,9 @@ class Receiver(ABC):
 
 
     @abstractmethod
-    async def parse_webhook(self, event: dict) -> dict:
+    async def parse_webhook(self, body: dict) -> dict:
         """
-        Parse message in webhooks requests.
+        Parse message provided in webhooks requests.
         
         :param message: JSON-formatted message from messenger's webhook API
         """

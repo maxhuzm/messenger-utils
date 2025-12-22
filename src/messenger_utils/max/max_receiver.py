@@ -3,7 +3,10 @@ Webhooks requests functionality for MAX API.
 """
 
 from messenger_utils.receiver import Receiver
+from messenger_utils.models.webhook_event import WebhookEvent, MessageCreatedEvent, MessageCallbackEvent
 from . import logger
+
+
 
 ### Class MaxReceiver ###
 
@@ -20,16 +23,16 @@ class MaxReceiver(Receiver):
 
 
 
-    async def parse_webhook(self, event: dict) -> dict:
+    async def parse_webhook(self, body: dict) -> dict:
         """
         Parse event from MAX webhook.
         
         :param event: JSON-formatted request body from MAX webhook API
         """
         result = {
-            "full_content": event,
+            "full_content": body,
         }
-        if "update_type" not in event:
+        if "update_type" not in body:
             logger.warning("Message of unknown type received!")
             return {
                 "result": "error",
@@ -37,8 +40,17 @@ class MaxReceiver(Receiver):
                 **result
             }
         # Parse event types
-        if event["update_type"] == "bot_started":
+        if body["update_type"] == "bot_started":
             # Bot started
+            event = WebhookEvent(
+                "bot_started", 
+                chat_id = body["chat_id"],
+                user_id = body["user"]["user_id"],
+                user_name = body["user"]["name"],
+                user_is_bot = body["user"]["is_bot"],
+                timestamp = body["timestamp"],
+                full_body = body
+            )
             if self.bot_started_func:
                 await self.bot_started_func(event, self.bot_token)
             return {
@@ -46,8 +58,17 @@ class MaxReceiver(Receiver):
                 "description": "Bot started",
                 **result
             }
-        if event["update_type"] == "bot_stopped":
+        if body["update_type"] == "bot_stopped":
             # Bot stopped
+            event = WebhookEvent(
+                "bot_stopped", 
+                chat_id = body["chat_id"],
+                user_id = body["user"]["user_id"],
+                user_name = body["user"]["name"],
+                user_is_bot = body["user"]["is_bot"],
+                timestamp = body["timestamp"],
+                full_body = body
+            )
             if self.bot_stopped_func:
                 await self.bot_stopped_func(event, self.bot_token)
             return {
@@ -55,8 +76,17 @@ class MaxReceiver(Receiver):
                 "description": "Bot stopped",
                 **result
             }
-        if event["update_type"] == "dialog_cleared":
+        if body["update_type"] == "dialog_cleared":
             # Dialog cleared
+            event = WebhookEvent(
+                "dialog_cleared",
+                chat_id = body["chat_id"],
+                user_id = body["user"]["user_id"],
+                user_name = body["user"]["name"],
+                user_is_bot = body["user"]["is_bot"],
+                timestamp = body["timestamp"],
+                full_body = body
+            )
             if self.chat_cleared_func:
                 await self.chat_cleared_func(event, self.bot_token)
             return {
@@ -64,8 +94,17 @@ class MaxReceiver(Receiver):
                 "description": "Dialog cleared",
                 **result
             }
-        if event["update_type"] == "dialog_removed":
+        if body["update_type"] == "dialog_removed":
             # Dialog removed
+            event = WebhookEvent(
+                "dialog_removed",
+                chat_id = body["chat_id"],
+                user_id = body["user"]["user_id"],
+                user_name = body["user"]["name"],
+                user_is_bot = body["user"]["is_bot"],
+                timestamp = body["timestamp"],
+                full_body = body
+            )
             if self.chat_removed_func:
                 await self.chat_removed_func(event, self.bot_token)
             return {
@@ -73,12 +112,22 @@ class MaxReceiver(Receiver):
                 "description": "Dialog removed",
                 **result
             }
-        if event["update_type"] == "message_created":
+        if body["update_type"] == "message_created":
             # Message created
-            content: str = event["message"]["body"]["text"]
-            if content.startswith("/"):
+            event = MessageCreatedEvent(
+                "message_created",
+                chat_id = body["message"]["recipient"]["chat_id"],
+                user_id = body["message"]["sender"]["user_id"],
+                user_name = body["message"]["sender"]["name"],
+                user_is_bot = body["message"]["sender"]["is_bot"],
+                recipient_id = body["message"]["recipient"]["user_id"],
+                text = (body["message"]["body"]["text"]).strip(),
+                timestamp=body["timestamp"],
+                full_body=body
+            )
+            if event.text.startswith("/"):
                 # Message is a command
-                command = content[1:]
+                command = event.text[1:]
                 if command not in self.commands_table:
                     logger.warning(f"Command `{command}` not found!")
                     return {
@@ -99,7 +148,7 @@ class MaxReceiver(Receiver):
                 return {
                     "result": "ok",
                     "description": "Message received",
-                    "content": content,
+                    "text": event.text,
                     **result
                 }
         else:

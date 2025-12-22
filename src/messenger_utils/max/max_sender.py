@@ -148,7 +148,7 @@ class MaxSender(Sender):
     # Messages
 
 
-    async def send_text_message(self, text: str, target: str) -> dict:
+    async def send_text_message(self, text: str, target: int) -> dict:
         """
         Send text message to the MAX user / chat via API.
         
@@ -161,12 +161,12 @@ class MaxSender(Sender):
             "text": text,
             "format": "markdown"
         }
-        response = await self.post(endpoint, data=data, url_params={"chat_id": target})
+        response = await self.post(endpoint, data=data, url_params={"chat_id": str(target)})
         return response
 
 
 
-    async def send_keyboard_message(self, text: str, target: str, keyboard: MaxKeyboard) -> dict:
+    async def send_keyboard_message(self, text: str, target: int, keyboard: MaxKeyboard) -> dict:
         """
         Send message with inline keyboard to the MAX user / chat via API.
         
@@ -185,12 +185,12 @@ class MaxSender(Sender):
                 }
             ]
         }
-        response = await self.post(endpoint, data=data, url_params={"chat_id": target})
+        response = await self.post(endpoint, data=data, url_params={"chat_id": str(target)})
         return response
 
 
 
-    async def send_image_message(self, text: str, image_url: str, target: str) -> dict:
+    async def send_image_message(self, text: str, image_url: str, target: int) -> dict:
         """
         Send message with image attached by URL to the MAX user / chat.
         """
@@ -207,7 +207,7 @@ class MaxSender(Sender):
                 }
             ]
         }
-        response = await self.post(endpoint, data=data, url_params={"chat_id": target})
+        response = await self.post(endpoint, data=data, url_params={"chat_id": str(target)})
         return response
 
 

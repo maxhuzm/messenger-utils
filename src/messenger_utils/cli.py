@@ -17,7 +17,8 @@ import typer
 from httpx import NetworkError
 from rich.console import Console
 from rich.table import Table
-from messenger_utils import __version__, MaxSender
+from messenger_utils import __version__
+from messenger_utils.max import MaxSender
 
 
 
