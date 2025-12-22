@@ -67,6 +67,7 @@ class MessageCallbackEvent(WebhookEvent):
     """
     Event of callback from keyboard button
     """
+    callback_id: str
     payload: str        # Button token
 
 

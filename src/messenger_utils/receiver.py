@@ -20,14 +20,24 @@ class Receiver(ABC):
         """
         self.bot_token: str|None = bot_token
         self.api_url: str = ""
-        self.commands_table: dict[str, Callable] = {}    # Command <=> Function link (set by decorator `Command``)
+        # Decorated function pointers for webhooks
+        # Commands
+        self.commands_table: dict[str, Callable] = {}               # Command <=> Function link (set by decorator `command``)
+        # Messages
+        self.create_message_func: Callable | None = None
+        self.callback_messages_table: dict[str, Callable] = {}      # Button's token <=> Function link (set by decorator `callback`)
+        # Functions processing bot state changes
         self.bot_started_func: Callable | None = None
         self.bot_stopped_func: Callable | None = None
         self.chat_cleared_func: Callable | None = None
         self.chat_removed_func: Callable | None = None
 
 
-    #  DECORATORS
+
+    #
+    # DECORATORS FACTORY
+    #
+
 
     def command(self, cmd_name: str) -> Callable:
         """
@@ -45,7 +55,41 @@ class Receiver(ABC):
                 return func(*args, **kwargs)
             return wrapper
         return decorator
-    
+
+
+
+    def callback(self, btn_token: str) -> Callable:
+        """
+        Decorator for `callback_message` processing function.
+        
+        :return: Decorator function
+        """
+        def decorator(func: Callable) -> Callable:
+            """The decorator itself."""
+            self.callback_messages_table[btn_token] = func
+            @wraps(func)
+            def wrapper(*args, **kwargs) -> Callable:
+                """Wrapper function."""
+                return func(*args, **kwargs)
+            return wrapper
+        return decorator
+
+
+
+    #
+    # DECORATORS
+    #
+
+
+    def create_message(self, func: Callable) -> Callable:
+        """
+        Decorator for `create_message` processing function.
+        
+        :return: Wrapped function
+        """
+        self.create_message_func = func
+        return func
+
 
 
     def bot_started(self, func: Callable) -> Callable:
@@ -56,7 +100,7 @@ class Receiver(ABC):
         """
         self.bot_started_func = func
         return func
-    
+
 
 
     def bot_stopped(self, func: Callable) -> Callable:
@@ -103,4 +147,3 @@ class Receiver(ABC):
         :param message: JSON-formatted message from messenger's webhook API
         """
         pass
-

@@ -75,7 +75,7 @@ class BaseButton:
 class CallbackButton(BaseButton):
     """Callback type button."""
     btn_type = BtnTypes.CALLBACK
-    payload: str                               # Button's token (up to 1024 chars)
+    payload: str                               # Button's token (up to 1024 chars). WARNING: Should be identifier-style!
     intent:  BtnIntents = BtnIntents.DEFAULT   # Button's intent (affects the display on the client)
 
 

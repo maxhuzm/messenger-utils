@@ -58,6 +58,7 @@ class MaxReceiver(Receiver):
                 "description": "Bot started",
                 **result
             }
+        #
         if body["update_type"] == "bot_stopped":
             # Bot stopped
             event = WebhookEvent(
@@ -76,6 +77,7 @@ class MaxReceiver(Receiver):
                 "description": "Bot stopped",
                 **result
             }
+        #
         if body["update_type"] == "dialog_cleared":
             # Dialog cleared
             event = WebhookEvent(
@@ -94,6 +96,7 @@ class MaxReceiver(Receiver):
                 "description": "Dialog cleared",
                 **result
             }
+        #
         if body["update_type"] == "dialog_removed":
             # Dialog removed
             event = WebhookEvent(
@@ -112,6 +115,36 @@ class MaxReceiver(Receiver):
                 "description": "Dialog removed",
                 **result
             }
+        #
+        if body["update_type"] == "message_callback":
+            # Message callback"
+            event = MessageCallbackEvent(
+                "message_callback",
+                chat_id = body["message"]["recipient"]["chat_id"],
+                user_id = body["callback"]["user"]["user_id"],
+                user_name = body["callback"]["user"]["name"],
+                user_is_bot = body["callback"]["user"]["is_bot"],
+                callback_id = body["callback"]["callback_id"],
+                payload = body["callback"]["payload"],
+                timestamp = body["timestamp"],
+                full_body=body
+            )
+            if event.payload not in self.callback_messages_table:
+                logger.warning(f"Callback for button `{event.payload}` not found!")
+                return {
+                    "result": "error",
+                    "type": "callback-not-found",
+                    "description": f"Callback for button `{event.payload}` not found!",
+                    **result
+                }
+            btn_result = await self.callback_messages_table[event.payload](event, self.bot_token)
+            return {
+                "result": "ok",
+                "description": f"Callback for button `{event.payload}` executed",
+                "button_result": btn_result,
+                **result
+            }
+        #
         if body["update_type"] == "message_created":
             # Message created
             event = MessageCreatedEvent(
@@ -145,6 +178,8 @@ class MaxReceiver(Receiver):
                 }
             else:
                 # Message is a text or img, or voice, etc...
+                if self.create_message_func:
+                    await self.create_message_func(event, self.bot_token)
                 return {
                     "result": "ok",
                     "description": "Message received",
