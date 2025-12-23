@@ -5,7 +5,7 @@ Contains class MaxSender, derived from Sender abstract class.
 """
 
 import json
-import httpx
+from typing import Any
 from messenger_utils.sender import Sender
 from messenger_utils.max.max_keyboard import *
 from . import MAX_API_URL
@@ -147,10 +147,53 @@ class MaxSender(Sender):
 
     # Messages
 
+    # pylint: disable=arguments-differ
+    async def send_message(
+            self,
+            text: str, *,
+            target: int,
+            image_url: str|None = None,
+            keyboard: MaxKeyboard|None = None,
+            **kwargs
+    ) -> dict:
+        """
+        Send message to the MAX user / chat.
+        
+        :param message: text of the message
+        :param target: chat_id
+        :param attachments: list of attachments
+        """
+        endpoint = "messages"
+        data: dict[str, Any] = {
+            "text": text,
+            "format": "markdown"
+        }
+        if image_url:
+            data["attachments"] = [
+                {
+                    "type": "image",
+                    "payload": {
+                        "url": image_url
+                    }
+                }
+            ]
+        if keyboard:
+            if "attachments" not in data:
+                data["attachments"] = []
+            data["attachments"].append({
+                "type": "inline_keyboard",
+                "payload": json.loads(keyboard.to_json())
+            })
+        response = await self.post(endpoint, data=data, url_params={"chat_id": target})
+        return response
 
+
+
+    ### DEPRECATED! ###
     async def send_text_message(self, text: str, target: int) -> dict:
         """
         Send text message to the MAX user / chat via API.
+        WARNING: Deprecated! Use `send_message` instead.
         
         :param message: text message to send
         :param target: chat_id
@@ -161,15 +204,17 @@ class MaxSender(Sender):
             "text": text,
             "format": "markdown"
         }
-        response = await self.post(endpoint, data=data, url_params={"chat_id": str(target)})
+        response = await self.post(endpoint, data=data, url_params={"chat_id": target})
         return response
 
 
 
+    ### DEPRECATED! ###
     async def send_keyboard_message(self, text: str, target: int, keyboard: MaxKeyboard) -> dict:
         """
         Send message with inline keyboard to the MAX user / chat via API.
-        
+        WARNING: Deprecated! Use `send_message` instead.
+
         :param message: text message to send
         :param target: chat_id
         :keyboard: 2d-array of buttons       
@@ -185,14 +230,15 @@ class MaxSender(Sender):
                 }
             ]
         }
-        response = await self.post(endpoint, data=data, url_params={"chat_id": str(target)})
+        response = await self.post(endpoint, data=data, url_params={"chat_id": target})
         return response
 
 
-
+    ### DEPRECATED! ###
     async def send_image_message(self, text: str, image_url: str, target: int) -> dict:
         """
         Send message with image attached by URL to the MAX user / chat.
+        WARNING: Deprecated! Use `send_message` instead.
         """
         endpoint = "messages"
         data = {
@@ -207,10 +253,8 @@ class MaxSender(Sender):
                 }
             ]
         }
-        response = await self.post(endpoint, data=data, url_params={"chat_id": str(target)})
+        response = await self.post(endpoint, data=data, url_params={"chat_id": target})
         return response
-
-
 
 
 ###   End of class MaxSender   ###

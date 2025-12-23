@@ -26,7 +26,11 @@ class Sender(ABC):
 
 
     @abstractmethod
-    async def send_text_message(self, text: str, target: str) -> dict:
+    async def send_message(
+            self,
+            text: str,
+            **kwargs
+    ) -> dict:
         """
         Sends a message to the messenger's webhook URL.
         
@@ -42,7 +46,7 @@ class Sender(ABC):
     async def get(
         self,
         endpoint: str="", *,
-        url_params: dict[str, str]|None = None
+        url_params: dict[str, str|int]|None = None
     ):
         """
         Send GET request to the bot API.
@@ -97,7 +101,7 @@ class Sender(ABC):
         self,
         endpoint: str="", *,
         data: dict|None = None,
-        url_params: dict[str, str]|None = None
+        url_params: dict[str, str|int]|None = None
     ):
         """
         Send POST request to the bot API.
@@ -125,7 +129,7 @@ class Sender(ABC):
     async def delete(
         self,
         endpoint: str="", *,
-        url_params: dict[str, str]|None = None
+        url_params: dict[str, str|int]|None = None
     ):
         """
         Send DELETE request to the bot API.
