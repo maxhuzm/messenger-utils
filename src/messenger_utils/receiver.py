@@ -77,7 +77,7 @@ class Receiver(ABC):
 
 
     #
-    # DECORATORS
+    # SIMPLE DECORATORS
     #
 
 

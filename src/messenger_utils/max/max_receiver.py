@@ -3,7 +3,7 @@ Webhooks requests functionality for MAX API.
 """
 
 from messenger_utils.receiver import Receiver
-from messenger_utils.models.webhook_event import WebhookEvent, MessageCreatedEvent, MessageCallbackEvent
+from messenger_utils.models.webhook_event import WebhookEvent, MessageCreatedEvent, MessageCallbackEvent, Attachment
 from . import logger
 
 
@@ -158,8 +158,18 @@ class MaxReceiver(Receiver):
                 timestamp=body["timestamp"],
                 full_body=body
             )
+            # Parse attachments
+            if "attachments" in body["message"]["body"]:
+                for attachment in body["message"]["body"]["attachments"]:
+                    att = Attachment(
+                        attachment_type = attachment["type"],
+                        url = attachment["payload"]["url"],
+                        token = attachment["payload"]["token"]
+                    )
+                    event.attachments.append(att)
+            # Parse commands
             if event.text.startswith("/"):
-                # Message is a command
+                # The Message is a command
                 command = event.text[1:]
                 if command not in self.commands_table:
                     logger.warning(f"Command `{command}` not found!")
@@ -177,7 +187,7 @@ class MaxReceiver(Receiver):
                     **result
                 }
             else:
-                # Message is a text or img, or voice, etc...
+                # The Message is a text or img, or voice, etc...
                 if self.create_message_func:
                     await self.create_message_func(event, self.bot_token)
                 return {
