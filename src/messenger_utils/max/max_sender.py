@@ -6,6 +6,7 @@ Contains class MaxSender, derived from Sender abstract class.
 
 import json
 from typing import Any
+import warnings
 from messenger_utils.sender import Sender
 from messenger_utils.max.max_keyboard import *
 from . import MAX_API_URL
@@ -199,6 +200,7 @@ class MaxSender(Sender):
         :param target: chat_id
         :raises httpx.NetworkError: If there is a network-related error during the request.
         """
+        warnings.warn("Deprecated! Use `send_message` instead.", category=DeprecationWarning, stacklevel=2)
         endpoint = "messages"
         data = {
             "text": text,
@@ -219,6 +221,7 @@ class MaxSender(Sender):
         :param target: chat_id
         :keyboard: 2d-array of buttons       
         """
+        warnings.warn("Deprecated! Use `send_message` instead.", category=DeprecationWarning, stacklevel=2)
         endpoint = "messages"
         data = {
             "text": text,
@@ -240,6 +243,7 @@ class MaxSender(Sender):
         Send message with image attached by URL to the MAX user / chat.
         WARNING: Deprecated! Use `send_message` instead.
         """
+        warnings.warn("Deprecated! Use `send_message` instead.", category=DeprecationWarning, stacklevel=2)
         endpoint = "messages"
         data = {
             "text": text,
