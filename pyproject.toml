@@ -8,6 +8,14 @@ authors = [
 ]
 requires-python = ">=3.12"
 
+keywords = ["messenger", "telegram", "max", "webhooks", "bot"]
+classifiers = [
+  "Programming Language :: Python :: 3.12",
+  "Intended Audience :: Developers",
+  "Operating System :: OS Independent",
+  "Development Status :: 4 - Beta"
+]
+
 dependencies = [
     "httpx>=0.28.1",
     "loguru>=0.7.3",
@@ -25,3 +33,8 @@ dev = [
 [build-system]
 requires = ["uv_build>=0.9.13,<0.10.0"]
 build-backend = "uv_build"
+
+[project.urls]
+Repository = "https://github.com/maxhuzm/messenger-utils"
+Documentation = "https://github.com/maxhuzm/messenger-utils/blob/master/README.md"
+Changelog = "https://github.com/maxhuzm/messenger-utils/blob/master/CHANGELOG.md"
