@@ -7,6 +7,7 @@ import pytest
 from messenger_utils.sender import Sender
 from messenger_utils.max.max_sender import MaxSender
 from messenger_utils.max.max_keyboard import *
+from . import MAX_TOKEN, CHAT_ID
 
 
 def test_absctact_sender():
@@ -46,15 +47,17 @@ def test_button_serialize():
 
 def test_remove_webhook():
     """Test for removing non-existing bot's webhooks request to MAX API."""
-    sender = MaxSender(bot_token="f9LHodD0cOI4iI-W-cfhiROcxb-JIQ_OqFUrNUyS6bYiLGuD5gvB-_ZKjFc9NvPQMFON06CQMA2Cj1ggZ0dl")
+    assert MAX_TOKEN is not None, "MESSENGER_UTILS_MAX_BOT_TOKEN environment variable not set"
+    sender = MaxSender(bot_token=MAX_TOKEN)
     response = asyncio.run(sender.remove_webhook(url="https://non-existing-url.com"))
-    assert response.get("success") == False
+    assert response.get("success") is False
 
 
 @pytest.mark.skip(reason="Enable if want to test webhooks request")
 def test_start_webhooks():
     """Test for starting bot's webhooks request to MAX API."""
-    sender = MaxSender(bot_token="f9LHodD0cOI4iI-W-cfhiROcxb-JIQ_OqFUrNUyS6bYiLGuD5gvB-_ZKjFc9NvPQMFON06CQMA2Cj1ggZ0dl")
+    assert MAX_TOKEN is not None, "MESSENGER_UTILS_MAX_BOT_TOKEN environment variable not set"
+    sender = MaxSender(bot_token=MAX_TOKEN)
     response = asyncio.run(sender.start_webhooks(url="https://bot.gardenerio.ru/gardenbot"))
     assert response == {"success": True }
 
@@ -68,12 +71,13 @@ def test_send_message_with_attachments():
         LinkButton(text="test2", url="https://example.com")
     ])
     img_url = "https://bot.gardenerio.ru/gardenbot-title-image.png"
-    sender = MaxSender(bot_token="f9LHodD0cOI4iI-W-cfhiROcxb-JIQ_OqFUrNUyS6bYiLGuD5gvB-_ZKjFc9NvPQMFON06CQMA2Cj1ggZ0dl")
-    asyncio.run(sender.send_message(text="Test attachments", target=100052860, keyboard=keyboard, image_url=img_url))
+    assert MAX_TOKEN is not None, "MESSENGER_UTILS_MAX_BOT_TOKEN environment variable not set"
+    sender = MaxSender(bot_token=MAX_TOKEN)
+    asyncio.run(sender.send_message(text="Test attachments", target=CHAT_ID, keyboard=keyboard, image_url=img_url))
 
 
 
-@pytest.mark.skip(reason="The method `send_keyboard_message` is deprecated")
+@pytest.mark.skip(reason="Enable if want to send message with keyboard")
 def test_send_keyboard():
     """Test sending the message with inline button"""
     keyboard = MaxKeyboard()
@@ -88,5 +92,6 @@ def test_send_keyboard():
     keyboard.add_row([
         MessageButton(text="test6")
     ])
-    sender = MaxSender(bot_token="f9LHodD0cOI4iI-W-cfhiROcxb-JIQ_OqFUrNUyS6bYiLGuD5gvB-_ZKjFc9NvPQMFON06CQMA2Cj1ggZ0dl")
-    asyncio.run(sender.send_keyboard_message(text="test", target=100052860, keyboard=keyboard))
+    assert MAX_TOKEN is not None, "MESSENGER_UTILS_MAX_BOT_TOKEN environment variable not set"
+    sender = MaxSender(bot_token=MAX_TOKEN)
+    asyncio.run(sender.send_keyboard_message(text="test", target=CHAT_ID, keyboard=keyboard))
