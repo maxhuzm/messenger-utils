@@ -116,15 +116,51 @@ class MessageButton(BaseButton):
 
 # Keyboard class
 
-ButtonUnion = CallbackButton | LinkButton | RequestContactButton | RequestGeoLocationButton | OpenAppButton | MessageButton
+type ButtonUnion =  CallbackButton | LinkButton | RequestContactButton | RequestGeoLocationButton | OpenAppButton | MessageButton
+type BtnGroupTypes = list[list[ButtonUnion]] | list[ButtonUnion] | ButtonUnion
 
 
-@dataclass
 class MaxKeyboard:
     """
     MAX messenger inline keyboard.
     """
-    buttons: list[list[ButtonUnion]] = field(default_factory=list)
+
+    def __init__(self, btn: BtnGroupTypes | None = None):
+        """
+        Max Keyboard init.
+        
+        Allows to init keyboard by single button, buttons list (align vertical) and 2d-nested list of buttons.
+
+        :param btn: object of one of ButtonUnion classes, list of ButtonUnion objects or 2d-nested list of ButtonUnion objects
+        """
+        self.buttons: list[list[ButtonUnion]] = []
+        match btn:
+            case None:
+                pass
+            # Nested list
+            case list() as lst if lst and isinstance(lst[0], list):
+                self.buttons = btn
+            # Flat list
+            case list() as lst:
+                for item in lst:
+                    self.add_button(item, -1)
+            # Single button
+            case obj:
+                self.add_button(obj, -1)
+
+
+
+    def add_button(self, button: ButtonUnion, row_idx: int = -1):
+        """
+        Add a single button to the keyboard.
+        
+        :param button: Button object
+        :param row_idx: Row index to add the button to. If -1, adds a new row with this button.
+        """
+        if row_idx == -1 or row_idx >= len(self.buttons):
+            self.buttons.append([button])
+        else:
+            self.buttons[row_idx].append(button)
 
 
 
