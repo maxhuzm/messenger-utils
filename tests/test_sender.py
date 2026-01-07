@@ -4,6 +4,7 @@ Tests for Sender and Derived Classes
 
 import asyncio
 import pytest
+from loguru import logger
 from messenger_utils.sender import Sender
 from messenger_utils.max.max_sender import MaxSender
 from messenger_utils.max.max_keyboard import *
@@ -76,22 +77,53 @@ def test_send_message_with_attachments():
     asyncio.run(sender.send_message(text="Test attachments", target=CHAT_ID, keyboard=keyboard, image_url=img_url))
 
 
+def test_create_keyboard():
+    """Test for creating keyboard."""
+    keyboard1 = MaxKeyboard(CallbackButton(text="test1", payload="buttontoken"))
+    keyboard2 = MaxKeyboard([
+        CallbackButton(text="test2", payload="buttontoken"),
+        LinkButton(text="test3", url="https://example.com"),
+        RequestContactButton(text="test4")
+    ])
+    keyboard3 = MaxKeyboard([
+        [
+            CallbackButton(text="test5", payload="buttontoken"),
+            LinkButton(text="test6", url="https://example.com")
+        ],
+        [
+            RequestContactButton(text="test7"),
+            RequestGeoLocationButton(text="test8")
+        ]
+    ])
+    assert keyboard1.to_json() == """{"buttons": [[{"type": "callback", "text": "test1", "payload": "buttontoken", "intent": "default"}]]}"""
+    assert keyboard2.to_json() == """{"buttons": [[{"type": "callback", "text": "test2", "payload": "buttontoken", "intent": "default"}], [{"type": "link", "text": "test3", "url": "https://example.com"}], [{"type": "request_contact", "text": "test4"}]]}"""
+    assert keyboard3.to_json() == """{"buttons": [[{"type": "callback", "text": "test5", "payload": "buttontoken", "intent": "default"}, {"type": "link", "text": "test6", "url": "https://example.com"}], [{"type": "request_contact", "text": "test7"}, {"type": "request_geo_location", "text": "test8", "quick": false}]]}"""
 
-@pytest.mark.skip(reason="Enable if want to send message with keyboard")
+
+# @pytest.mark.skip(reason="Enable if want to send message with keyboard")
 def test_send_keyboard():
     """Test sending the message with inline button"""
-    keyboard = MaxKeyboard()
-    keyboard.add_row([
-        CallbackButton(text="test1", payload="buttontoken"),
-        LinkButton(text="test2", url="https://example.com")
+    keyboard1 = MaxKeyboard(CallbackButton(text="test1", payload="buttontoken"))
+    keyboard2 = MaxKeyboard([
+        CallbackButton(text="test2", payload="buttontoken"),
+        LinkButton(text="test3", url="https://example.com"),
+        RequestContactButton(text="test4")
     ])
-    keyboard.add_row([
-        RequestContactButton(text="test3"),
-        RequestGeoLocationButton(text="test4")
+    keyboard3 = MaxKeyboard([
+        [
+            CallbackButton(text="test5", payload="buttontoken"),
+            LinkButton(text="test6", url="https://example.com")
+        ],
+        [
+            RequestContactButton(text="test7"),
+            RequestGeoLocationButton(text="test8")
+        ]
     ])
-    keyboard.add_row([
-        MessageButton(text="test6")
-    ])
+    assert keyboard1.to_json() == """{"buttons": [[{"type": "callback", "text": "test1", "payload": "buttontoken", "intent": "default"}]]}"""
+    assert keyboard2.to_json() == """{"buttons": [[{"type": "callback", "text": "test2", "payload": "buttontoken", "intent": "default"}], [{"type": "link", "text": "test3", "url": "https://example.com"}], [{"type": "request_contact", "text": "test4"}]]}"""
+    assert keyboard3.to_json() == """{"buttons": [[{"type": "callback", "text": "test5", "payload": "buttontoken", "intent": "default"}, {"type": "link", "text": "test6", "url": "https://example.com"}], [{"type": "request_contact", "text": "test7"}, {"type": "request_geo_location", "text": "test8", "quick": false}]]}"""
     assert MAX_TOKEN is not None, "MESSENGER_UTILS_MAX_BOT_TOKEN environment variable not set"
     sender = MaxSender(bot_token=MAX_TOKEN)
-    asyncio.run(sender.send_keyboard_message(text="test", target=CHAT_ID, keyboard=keyboard))
+    asyncio.run(sender.send_message(text="The keyboard1:", target=CHAT_ID, keyboard=keyboard1))
+    asyncio.run(sender.send_message(text="The keyboard2:", target=CHAT_ID, keyboard=keyboard2))
+    asyncio.run(sender.send_message(text="The keyboard3:", target=CHAT_ID, keyboard=keyboard3))
