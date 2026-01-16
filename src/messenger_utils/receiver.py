@@ -17,6 +17,22 @@ class Receiver(ABC, Generic[T_WHOOK]):
     Receiver abstract class - parcing and processing responses and web-hooks.
     Particular functionality is implemented in derived classes.
     """
+    
+    # Class vars
+
+    # Decorated function pointers for webhooks
+    # Commands
+    commands_table: dict[str, Callable] = {}               # Command <=> Function link (set by decorator `command``)
+    # Messages
+    create_message_func: Callable | None = None
+    callback_messages_table: dict[str, Callable] = {}      # Button's token <=> Function link (set by decorator `callback`)
+    # Functions processing bot state changes
+    bot_started_func: Callable | None = None
+    bot_stopped_func: Callable | None = None
+    chat_cleared_func: Callable | None = None
+    chat_removed_func: Callable | None = None
+
+
 
     def __init__(self, webhook_data: dict[str, Any], bot_token: str|None = None):
         """
@@ -25,17 +41,6 @@ class Receiver(ABC, Generic[T_WHOOK]):
         self.webhook_data: dict[str, Any] = webhook_data
         self.bot_token: str|None = bot_token
         self.api_url: str = ""
-        # Decorated function pointers for webhooks
-        # Commands
-        self.commands_table: dict[str, Callable] = {}               # Command <=> Function link (set by decorator `command``)
-        # Messages
-        self.create_message_func: Callable | None = None
-        self.callback_messages_table: dict[str, Callable] = {}      # Button's token <=> Function link (set by decorator `callback`)
-        # Functions processing bot state changes
-        self.bot_started_func: Callable | None = None
-        self.bot_stopped_func: Callable | None = None
-        self.chat_cleared_func: Callable | None = None
-        self.chat_removed_func: Callable | None = None
 
 
 
@@ -43,8 +48,8 @@ class Receiver(ABC, Generic[T_WHOOK]):
     # DECORATORS FACTORY
     #
 
-
-    def command(self, cmd_name: str) -> Callable:
+    @classmethod
+    def command(cls, cmd_name: str) -> Callable:
         """
         Decorator factory for commands processing.
         
@@ -53,7 +58,7 @@ class Receiver(ABC, Generic[T_WHOOK]):
         """
         def decorator(func: Callable) -> Callable:
             """The decorator itself."""
-            self.commands_table[cmd_name] = func
+            cls.commands_table[cmd_name] = func
             @wraps(func)
             def wrapper(*args, **kwargs) -> Callable:
                 """Wrapper function."""
@@ -62,8 +67,8 @@ class Receiver(ABC, Generic[T_WHOOK]):
         return decorator
 
 
-
-    def callback(self, btn_token: str) -> Callable:
+    @classmethod
+    def callback(cls, btn_token: str) -> Callable:
         """
         Decorator for `callback_message` processing function.
         
@@ -71,7 +76,7 @@ class Receiver(ABC, Generic[T_WHOOK]):
         """
         def decorator(func: Callable) -> Callable:
             """The decorator itself."""
-            self.callback_messages_table[btn_token] = func
+            cls.callback_messages_table[btn_token] = func
             @wraps(func)
             def wrapper(*args, **kwargs) -> Callable:
                 """Wrapper function."""
@@ -86,57 +91,62 @@ class Receiver(ABC, Generic[T_WHOOK]):
     #
 
 
-    def create_message(self, func: Callable) -> Callable:
+    @classmethod
+    def create_message(cls, func: Callable) -> Callable:
         """
         Decorator for `create_message` processing function.
         
         :return: Wrapped function
         """
-        self.create_message_func = func
+        cls.create_message_func = func
         return func
 
 
 
-    def bot_started(self, func: Callable) -> Callable:
+    @classmethod
+    def bot_started(cls, func: Callable) -> Callable:
         """
         Decorator for `bot_started` processing function.
         
         :return: Wrapped function
         """
-        self.bot_started_func = func
+        cls.bot_started_func = func
         return func
 
 
 
-    def bot_stopped(self, func: Callable) -> Callable:
+    @classmethod
+    def bot_stopped(cls, func: Callable) -> Callable:
         """
         Decorator for `bot_stopped` processing function.
         
         :return: Wrapped function
         """
-        self.bot_stopped_func = func
+        cls.bot_stopped_func = func
         return func
 
 
 
-    def chat_cleared(self, func: Callable) -> Callable:
+    @classmethod
+    def chat_cleared(cls, func: Callable) -> Callable:
         """
         Decorator for `chat_cleared` processing function.
         
         :return: Wrapped function
         """
-        self.chat_cleared_func = func
+        cls.chat_cleared_func = func
         return func
 
 
 
-    def chat_removed(self, func: Callable) -> Callable:
+    @classmethod
+    def chat_removed(cls, func: Callable) -> Callable:
         """
         Decorator for `chat_removed` processing function.
         
         :return: Wrapped function
         """
-        self.chat_removed_func = func
+        cls.chat_removed_func = func
         return func
 
 
