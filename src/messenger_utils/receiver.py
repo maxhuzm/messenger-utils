@@ -162,3 +162,9 @@ class Receiver(ABC, Generic[T_WHOOK]):
         :param body: JSON-formatted message from messenger's webhook API
         """
         pass
+
+
+    @abstractmethod
+    async def process_webhook(self, **kwargs):
+        """Call bound functions according to event type."""
+        pass

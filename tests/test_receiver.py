@@ -4,8 +4,8 @@ Tests for Receiver and Derived Classes
 Info: to run the tests you should have env vars available:
 - `MESSENGER_UTILS_MAX_BOT_TOKEN`   # MAX API token to interact with bot
 """
-import pytest
 import asyncio
+import pytest
 from messenger_utils.max import MaxReceiver
 from messenger_utils.models.max_webhook_event import MaxWebhookEvent, MessageCreatedEvent, MessageCallbackEvent
 
@@ -180,6 +180,40 @@ def test_message_attachments():
     assert event.event_type == "message_created"
     assert event.attachments[0].attachment_type == "image"
     assert event.attachments[1].attachment_type == "audio"
+    asyncio.run(receiver.process_webhook())
+
+
+def test_command():
+    """Test for command in message_created event."""
+    body = {
+        "timestamp": 1764671262844,
+        "message": {
+            "recipient": {
+                "chat_id": 100052860,
+                "chat_type": "dialog",
+                "user_id": 108858268
+            },
+            "timestamp": 1764671262844,
+            "body": {
+                "mid": "mid.0000000005f6af7c019ade9a907c08ef",
+                "seq": 115649495881746671,
+                "text": "/info"
+            },
+            "sender": {
+                "user_id": 59483360,
+                "first_name": "Maxim",
+                "last_name": "",
+                "is_bot": False,
+                "last_activity_time": 1764670619000,
+                "name": "Maxim"
+            }
+        },
+        "user_locale": "ru",
+        "update_type": "message_created"
+    }
+    receiver = MaxReceiver(webhook_data=body)
+    event = receiver.parse_webhook()
+    assert isinstance(event, MessageCreatedEvent)
     asyncio.run(receiver.process_webhook())
 
 

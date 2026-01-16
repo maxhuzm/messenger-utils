@@ -133,7 +133,7 @@ class MaxReceiver(Receiver[MaxWebhookEventType]):
 
 
 
-    async def process_webhook(self):
+    async def process_webhook(self, **kwargs):
         """Bind handler functions to the event."""
         if self.webhook_event is None:
             self.parse_webhook()
@@ -145,43 +145,43 @@ class MaxReceiver(Receiver[MaxWebhookEventType]):
             # Bind start & stop
             case MaxWebhookEvent(event_type="bot_started"):
                 logger.info("Event `bot_started` recognized")
-                if self.bot_started_func:
-                    await self.bot_started_func()
+                if MaxReceiver.bot_started_func is not None:
+                    await MaxReceiver.bot_started_func(event, **kwargs)
             case MaxWebhookEvent(event_type="bot_stopped"):
                 logger.info("Event `bot_stopped` recognized")
-                if self.bot_stopped_func:
-                    await self.bot_stopped_func()
+                if MaxReceiver.bot_stopped_func is not None:
+                    await MaxReceiver.bot_stopped_func(event, **kwargs)
             # Bind dialog cleared & removed
             case MaxWebhookEvent(event_type="dialog_cleared"):
                 logger.info("Event `dialog_cleared` recognized")
-                if self.chat_cleared_func:
-                    await self.chat_cleared_func()
+                if MaxReceiver.chat_cleared_func is not None:
+                    await MaxReceiver.chat_cleared_func(event, **kwargs)
             case MaxWebhookEvent(event_type="dialog_removed"):
                 logger.info("Event `dialog_removed` recognized")
-                if self.chat_removed_func:
-                    await self.chat_removed_func()
+                if MaxReceiver.chat_removed_func is not None:
+                    await MaxReceiver.chat_removed_func(event, **kwargs)
             # Button callback
             case MessageCallbackEvent(event_type="message_callback"):
                 logger.info("Event `message_callback` recognized")
-                if event.payload not in self.callback_messages_table:
+                if event.payload not in MaxReceiver.callback_messages_table:
                     logger.warning(f"Callback for button `{event.payload}` not found!")
                     return
-                await self.callback_messages_table[event.payload]()
+                await MaxReceiver.callback_messages_table[event.payload](event, **kwargs)
             # Message created
             case MessageCreatedEvent(event_type="message_created"):
                 if event.text.startswith("/"):
                     # The Message is a command
                     logger.info("Event `command` recognized")
                     command = event.text[1:]
-                    if command not in self.commands_table:
+                    if command not in MaxReceiver.commands_table:
                         logger.warning(f"Command `{command}` not found!")
                         return
-                    await self.commands_table[command]()
+                    await MaxReceiver.commands_table[command](event, **kwargs)
                 else:
                     # The Message is a text or img, or voice, etc...
                     logger.info("Event `create_message` recognized")
-                    if self.create_message_func:
-                        await self.create_message_func()
+                    if MaxReceiver.create_message_func is not None:
+                        await MaxReceiver.create_message_func(event, **kwargs)
         return
 
 ### End of class Receiver ###
