@@ -20,6 +20,10 @@ from messenger_utils.max.max_sender import MaxSender
 from messenger_utils.max.max_keyboard import *
 from . import MAX_TOKEN, CHAT_ID
 
+if CHAT_ID is None:
+    raise ValueError("MESSENGER_UTILS_CHAT_ID environment variable not set.")
+
+
 pytestmark = pytest.mark.skipif(
     os.getenv("RUN_IGNORED") != "true",
     reason="Ignore sender tests file by default"

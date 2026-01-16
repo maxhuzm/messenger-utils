@@ -6,6 +6,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0).
 
 ---
 
+## [2.2.0] - 2026-01-16
+
+### Changed
+
+- `Receiver` is generic class.
+- `Receiver` constructor gets `webhook_data` arg.
+- `parse_webhook` method doesn't bind processing funcs to the events, but just creates WebhookEvent object
+
+### Added
+
+- `process_webhook` method binds processing funcs to the events.
+
 ## [2.1.3] - 2026-01-07
 
 - Readme updated.
