@@ -3,7 +3,7 @@ Webhook Events Classes
 """
 
 __all__ = [
-    "EventTypes", "AttachmentTypes", "Attachment", "WebhookEvent", "MessageCreatedEvent", "MessageCallbackEvent", "WebhookEventType"
+    "EventTypes", "AttachmentTypes", "Attachment", "MaxWebhookEvent", "MessageCreatedEvent", "MessageCallbackEvent", "MaxWebhookEventType"
 ]
 
 
@@ -39,7 +39,7 @@ class Attachment:
 
 
 @dataclass(slots=True)
-class WebhookEvent:
+class MaxWebhookEvent:
     """
     Base class for all webhook events.
     """
@@ -53,7 +53,7 @@ class WebhookEvent:
 
 
 @dataclass(slots=True)
-class MessageCreatedEvent(WebhookEvent):
+class MessageCreatedEvent(MaxWebhookEvent):
     """
     Event whith type `message_created`.
     """
@@ -63,7 +63,7 @@ class MessageCreatedEvent(WebhookEvent):
 
 
 @dataclass(slots=True)
-class MessageCallbackEvent(WebhookEvent):
+class MessageCallbackEvent(MaxWebhookEvent):
     """
     Event of callback from keyboard button
     """
@@ -71,4 +71,4 @@ class MessageCallbackEvent(WebhookEvent):
     payload: str        # Button token
 
 
-WebhookEventType = WebhookEvent | MessageCreatedEvent | MessageCallbackEvent
+MaxWebhookEventType = MaxWebhookEvent | MessageCreatedEvent | MessageCallbackEvent

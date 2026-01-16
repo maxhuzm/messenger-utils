@@ -3,21 +3,26 @@ Parcing and processing messenger's responses and web-hooks
 """
 
 from abc import ABC, abstractmethod
+from typing import Any, Generic, TypeVar
 from collections.abc import Callable
 from functools import wraps
 
+# Generic types: for MAX & Telegram specific objects
+T_WHOOK = TypeVar("T_WHOOK")    # WebHook type
+
 ### CLASS `Receiver` ###
 
-class Receiver(ABC):
+class Receiver(ABC, Generic[T_WHOOK]):
     """
     Receiver abstract class - parcing and processing responses and web-hooks.
     Particular functionality is implemented in derived classes.
     """
 
-    def __init__(self, bot_token: str|None = None):
+    def __init__(self, webhook_data: dict[str, Any], bot_token: str|None = None):
         """
         Init Receiver object.
         """
+        self.webhook_data: dict[str, Any] = webhook_data
         self.bot_token: str|None = bot_token
         self.api_url: str = ""
         # Decorated function pointers for webhooks
@@ -140,10 +145,10 @@ class Receiver(ABC):
 
 
     @abstractmethod
-    async def parse_webhook(self, body: dict) -> dict:
+    def parse_webhook(self) -> T_WHOOK:
         """
         Parse message provided in webhooks requests.
         
-        :param message: JSON-formatted message from messenger's webhook API
+        :param body: JSON-formatted message from messenger's webhook API
         """
         pass
