@@ -4,7 +4,7 @@ Webhooks requests functionality for MAX API.
 
 from typing import Any, get_args
 from messenger_utils.receiver import Receiver
-from messenger_utils.models.max_webhook_event import EventTypes, MaxWebhookEventType, MaxWebhookEvent, MessageCreatedEvent, MessageCallbackEvent, Attachment
+from messenger_utils.models.max_webhook_event import *
 from . import logger
 
 
@@ -25,7 +25,7 @@ class MaxReceiver(Receiver[MaxWebhookEventType]):
         """
         super().__init__(webhook_data, bot_token)
         # Base check for MAX webhook body is valid
-        if update_type := webhook_data.get("update_type") is None:
+        if (update_type := webhook_data.get("update_type")) is None:
             raise ValueError("No `update_type` field in webhook body")
         valid_events = get_args(EventTypes)
         if update_type not in valid_events:
@@ -71,10 +71,7 @@ class MaxReceiver(Receiver[MaxWebhookEventType]):
                         "name": user_name,
                         "is_bot": user_is_bot
                     },
-                    "body": {
-                        "text": text,
-                        "attachments": attachments
-                    }
+                    "body": body
                 }
             }:
                 self.webhook_event = MessageCreatedEvent(
@@ -84,12 +81,12 @@ class MaxReceiver(Receiver[MaxWebhookEventType]):
                     user_name = user_name,
                     user_is_bot = user_is_bot,
                     recipient_id = bot_id,
-                    text = text,
+                    text = body["text"],
                     timestamp = timestamp,
                     full_body = self.webhook_data
                 )
                 # Chcek attachments
-                if attachments:
+                if (attachments := body.get("attachments", None)) is not None:
                     for a in attachments:
                         self.webhook_event.attachments.append(
                             Attachment(
@@ -130,7 +127,7 @@ class MaxReceiver(Receiver[MaxWebhookEventType]):
                 )
             # > Unknown webhook
             case _:
-                raise ValueError("Unknown webhook type")
+                raise ValueError("Cannot parse webhook body")
         # Return parsed webhook as object
         return self.webhook_event
 

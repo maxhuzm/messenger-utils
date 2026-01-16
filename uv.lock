@@ -219,7 +219,7 @@ wheels = [
 
 [[package]]
 name = "messenger-utils"
-version = "2.1.3"
+version = "2.2.0"
 source = { editable = "." }
 dependencies = [
     { name = "httpx" },
