@@ -133,187 +133,55 @@ class MaxReceiver(Receiver[MaxWebhookEventType]):
 
 
 
-    async def parse_webhook2(self) -> dict:
-        """
-        Parse event from MAX webhook.
-        
-        :param event: JSON-formatted request body from MAX webhook API
-        """
-        body = self.webhook_data
-        result = {
-            "full_content": body,
-        }
-        if "update_type" not in body:
-            logger.warning("Message of unknown type received!")
-            return {
-                "result": "error",
-                "description": "Webhook message of unknown type received!",
-                **result
-            }
-        # Parse event types
-        if body["update_type"] == "bot_started":
-            # Bot started
-            event = MaxWebhookEvent(
-                "bot_started", 
-                chat_id = body["chat_id"],
-                user_id = body["user"]["user_id"],
-                user_name = body["user"]["name"],
-                user_is_bot = body["user"]["is_bot"],
-                timestamp = body["timestamp"],
-                full_body = body
-            )
-            if self.bot_started_func:
-                await self.bot_started_func(event, self.bot_token)
-            return {
-                "result": "ok",
-                "description": "Bot started",
-                **result
-            }
-        #
-        if body["update_type"] == "bot_stopped":
-            # Bot stopped
-            event = MaxWebhookEvent(
-                "bot_stopped", 
-                chat_id = body["chat_id"],
-                user_id = body["user"]["user_id"],
-                user_name = body["user"]["name"],
-                user_is_bot = body["user"]["is_bot"],
-                timestamp = body["timestamp"],
-                full_body = body
-            )
-            if self.bot_stopped_func:
-                await self.bot_stopped_func(event, self.bot_token)
-            return {
-                "result": "ok",
-                "description": "Bot stopped",
-                **result
-            }
-        #
-        if body["update_type"] == "dialog_cleared":
-            # Dialog cleared
-            event = MaxWebhookEvent(
-                "dialog_cleared",
-                chat_id = body["chat_id"],
-                user_id = body["user"]["user_id"],
-                user_name = body["user"]["name"],
-                user_is_bot = body["user"]["is_bot"],
-                timestamp = body["timestamp"],
-                full_body = body
-            )
-            if self.chat_cleared_func:
-                await self.chat_cleared_func(event, self.bot_token)
-            return {
-                "result": "ok",
-                "description": "Dialog cleared",
-                **result
-            }
-        #
-        if body["update_type"] == "dialog_removed":
-            # Dialog removed
-            event = MaxWebhookEvent(
-                "dialog_removed",
-                chat_id = body["chat_id"],
-                user_id = body["user"]["user_id"],
-                user_name = body["user"]["name"],
-                user_is_bot = body["user"]["is_bot"],
-                timestamp = body["timestamp"],
-                full_body = body
-            )
-            if self.chat_removed_func:
-                await self.chat_removed_func(event, self.bot_token)
-            return {
-                "result": "ok",
-                "description": "Dialog removed",
-                **result
-            }
-        #
-        if body["update_type"] == "message_callback":
-            # Message callback"
-            event = MessageCallbackEvent(
-                "message_callback",
-                chat_id = body["message"]["recipient"]["chat_id"],
-                user_id = body["callback"]["user"]["user_id"],
-                user_name = body["callback"]["user"]["name"],
-                user_is_bot = body["callback"]["user"]["is_bot"],
-                callback_id = body["callback"]["callback_id"],
-                payload = body["callback"]["payload"],
-                timestamp = body["timestamp"],
-                full_body=body
-            )
-            if event.payload not in self.callback_messages_table:
-                logger.warning(f"Callback for button `{event.payload}` not found!")
-                return {
-                    "result": "error",
-                    "type": "callback-not-found",
-                    "description": f"Callback for button `{event.payload}` not found!",
-                    **result
-                }
-            btn_result = await self.callback_messages_table[event.payload](event, self.bot_token)
-            return {
-                "result": "ok",
-                "description": f"Callback for button `{event.payload}` executed",
-                "button_result": btn_result,
-                **result
-            }
-        #
-        if body["update_type"] == "message_created":
+    async def process_webhook(self):
+        """Bind handler functions to the event."""
+        if self.webhook_event is None:
+            self.parse_webhook()
+        assert self.webhook_event is not None
+        event: MaxWebhookEventType = self.webhook_event
+        if event is None:
+            return
+        match event:
+            # Bind start & stop
+            case MaxWebhookEvent(event_type="bot_started"):
+                logger.info("Event `bot_started` recognized")
+                if self.bot_started_func:
+                    await self.bot_started_func()
+            case MaxWebhookEvent(event_type="bot_stopped"):
+                logger.info("Event `bot_stopped` recognized")
+                if self.bot_stopped_func:
+                    await self.bot_stopped_func()
+            # Bind dialog cleared & removed
+            case MaxWebhookEvent(event_type="dialog_cleared"):
+                logger.info("Event `dialog_cleared` recognized")
+                if self.chat_cleared_func:
+                    await self.chat_cleared_func()
+            case MaxWebhookEvent(event_type="dialog_removed"):
+                logger.info("Event `dialog_removed` recognized")
+                if self.chat_removed_func:
+                    await self.chat_removed_func()
+            # Button callback
+            case MessageCallbackEvent(event_type="message_callback"):
+                logger.info("Event `message_callback` recognized")
+                if event.payload not in self.callback_messages_table:
+                    logger.warning(f"Callback for button `{event.payload}` not found!")
+                    return
+                await self.callback_messages_table[event.payload]()
             # Message created
-            event = MessageCreatedEvent(
-                "message_created",
-                chat_id = body["message"]["recipient"]["chat_id"],
-                user_id = body["message"]["sender"]["user_id"],
-                user_name = body["message"]["sender"]["name"],
-                user_is_bot = body["message"]["sender"]["is_bot"],
-                recipient_id = body["message"]["recipient"]["user_id"],
-                text = (body["message"]["body"]["text"]).strip(),
-                timestamp=body["timestamp"],
-                full_body=body
-            )
-            # Parse attachments
-            if "attachments" in body["message"]["body"]:
-                for attachment in body["message"]["body"]["attachments"]:
-                    att = Attachment(
-                        attachment_type = attachment["type"],
-                        url = attachment["payload"]["url"],
-                        token = attachment["payload"]["token"]
-                    )
-                    event.attachments.append(att)
-            # Parse commands
-            if event.text.startswith("/"):
-                # The Message is a command
-                command = event.text[1:]
-                if command not in self.commands_table:
-                    logger.warning(f"Command `{command}` not found!")
-                    return {
-                        "result": "error",
-                        "type": "command-not-found",
-                        "description": f"Command `{command}` not found!",
-                        **result
-                    }
-                cmd_result = await self.commands_table[command](event, self.bot_token)
-                return {
-                    "result": "ok",
-                    "description": f"Command `{command}` executed",
-                    "command_result": cmd_result,
-                    **result
-                }
-            else:
-                # The Message is a text or img, or voice, etc...
-                if self.create_message_func:
-                    await self.create_message_func(event, self.bot_token)
-                return {
-                    "result": "ok",
-                    "description": "Message received",
-                    "text": event.text,
-                    **result
-                }
-        else:
-            # Other message types
-            return {
-                "result": "ok",
-                "description": "Event received",
-                **result
-            }
-
+            case MessageCreatedEvent(event_type="message_created"):
+                if event.text.startswith("/"):
+                    # The Message is a command
+                    logger.info("Event `command` recognized")
+                    command = event.text[1:]
+                    if command not in self.commands_table:
+                        logger.warning(f"Command `{command}` not found!")
+                        return
+                    await self.commands_table[command]()
+                else:
+                    # The Message is a text or img, or voice, etc...
+                    logger.info("Event `create_message` recognized")
+                    if self.create_message_func:
+                        await self.create_message_func()
+        return
 
 ### End of class Receiver ###
