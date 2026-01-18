@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0).
 
 ---
 
+## [2.3.0] - 2026-01-18
+
+### Added
+
+- `update_all_commands` method in MaxSender class.
+
+
 ## [2.2.0] - 2026-01-16
 
 ### Changed
