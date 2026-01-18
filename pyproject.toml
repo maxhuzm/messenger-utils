@@ -1,6 +1,6 @@
 [project]
 name = "messenger-utils"
-version = "2.2.0"
+version = "2.3.0"
 description = "Utilites and CLI for MAX and Telegram messengers."
 readme = "README.md"
 authors = [
