@@ -29,9 +29,13 @@ pytestmark = pytest.mark.skipif(
     reason="Ignore sender tests file by default"
 )
 
+#
+# Bot configuration messages
+#
+
 def test_remove_webhook():
     """Test for removing non-existing bot's webhooks request to MAX API."""
-    assert MAX_TOKEN is not None and CHAT_ID is not None, "MESSENGER_UTILS_MAX_BOT_TOKEN & CHAT_ID environment variable not set"
+    assert MAX_TOKEN is not None and CHAT_ID is not None, "MESSENGER_UTILS_MAX_BOT_TOKEN & CHAT_ID environment vars not set"
     sender = MaxSender(bot_token=MAX_TOKEN)
     response = asyncio.run(sender.remove_webhook(url="https://non-existing-url.com"))
     assert response.get("success") is False
@@ -40,10 +44,29 @@ def test_remove_webhook():
 @pytest.mark.skip(reason="Enable if want to test webhooks request")
 def test_start_webhooks():
     """Test for starting bot's webhooks request to MAX API."""
-    assert MAX_TOKEN is not None and CHAT_ID is not None, "MESSENGER_UTILS_MAX_BOT_TOKEN & CHAT_ID environment variable not set"
+    assert MAX_TOKEN is not None and CHAT_ID is not None, "MESSENGER_UTILS_MAX_BOT_TOKEN & CHAT_ID environment vars not set"
     sender = MaxSender(bot_token=MAX_TOKEN)
     response = asyncio.run(sender.start_webhooks(url="https://bot.gardenerio.ru/gardenbot"))
     assert response == {"success": True }
+
+
+@pytest.mark.skip(reason="Enable if want to test set_commands request")
+def test_set_commands():
+    """Test for registering  bot's commands."""
+    assert MAX_TOKEN is not None, "MESSENGER_UTILS_MAX_BOT_TOKEN environment var not set"
+    commands = [
+        {"name": "help", "description": "Get help"},
+        {"name": "info", "description": "Get info"},
+        {"name": "panel", "description": "Get panel"}
+    ]
+    sender = MaxSender(bot_token=MAX_TOKEN)
+    response = asyncio.run(sender.update_all_commands(commands=commands))
+    assert response == {"success": True }
+
+
+#
+# Other Messages
+#
 
 
 def test_send_message_with_attachments():
