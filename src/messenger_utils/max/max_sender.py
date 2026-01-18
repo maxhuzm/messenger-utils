@@ -94,7 +94,7 @@ class MaxSender(Sender):
         if "commands" in response:
             return response["commands"]
         return []
-    
+
 
 
     async def register_command(self, *, name: str, description: str):
@@ -116,6 +116,21 @@ class MaxSender(Sender):
             "description": description
         }
         commands.append(new_command)
+        data = {
+            "commands": commands
+        }
+        response = await self.patch(endpoint, data=data)
+        return response
+
+
+
+    async def update_all_commands(self, *, commands: list[dict[str, str]]):
+        """
+        Rewrite whole registred commands list for the MAX Bot.
+        
+        :param commands: commands list in format: [ {"name": <name>, "description": <description>}, ...]
+        """
+        endpoint = "me"
         data = {
             "commands": commands
         }
