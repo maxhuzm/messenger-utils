@@ -59,8 +59,10 @@ class BaseButton:
     def to_dict(self) -> dict:
         """Convert the button to a JSON-serializable dictionary."""
         btn_dict = asdict(self)
+        # remove keys with `None` values
+        btn_dict = {k: v for k, v in btn_dict.items() if v is not None}
         return btn_dict
-    
+
     def to_json(self) -> str:
         """Convert the button to a JSON string."""
         btn_dict = self.to_dict()
@@ -103,9 +105,9 @@ class RequestGeoLocationButton(BaseButton):
 class OpenAppButton(BaseButton):
     """Open app type button."""
     btn_type = BtnTypes.OPEN_APP
-    web_app:    str|None = None                # Bot's public name or link - owner of mini-app
-    contact_id: int|None = None                # Bot's ID - owner of mini-app
-    payload:    str|None = None                # Launch param, to be sent to initData of mini-app
+    web_app:    str                     # Bot's public name or link - owner of mini-app
+    contact_id: int|None = None         # Bot's ID - owner of mini-app
+    payload:    str|None = None         # Launch param, to be sent to initData of mini-app
 
 
 @dataclass
