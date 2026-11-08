@@ -1,7 +1,7 @@
 """
 MAX messenger inits.
 """
-MAX_API_URL = "https://platform-api.max.ru"
+MAX_API_URL = "https://platform-api2.max.ru/"
 
 from .. import logger
 from .max_sender import MaxSender
